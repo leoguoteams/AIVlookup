@@ -856,10 +856,10 @@ class AISemanticMatchApp:
                 match_count += 1
             else:
                 log_print(self.log_box, f"→ 第{idx+1}/{total}条：向量化相似度={top1_val:.3f}，Top2={top2_val:.3f}，进入LLM并发准备...")
-            # Defer LL.M 调用，后续批量执行
-            final_results[idx] = [a_txt, "", "", "", 0, "LLM", "LLM-pending"]
-            cosine_score_for_this = int(top1_val * 100)
-            pending_llm.append((idx, a_txt, top3_data, api_key, cosine_score_for_this))
+                # Defer LL.M 调用，后续批量执行
+                final_results[idx] = [a_txt, "", "", "", 0, "LLM", "LLM-pending"]
+                cosine_score_for_this = int(top1_val * 100)
+                pending_llm.append((idx, a_txt, top3_data, api_key, cosine_score_for_this))
 
             self.match_progress["value"] = 50 + ((idx + 1) / total) * 50
 
