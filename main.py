@@ -113,7 +113,9 @@ def llm_find_best_from_top3(a_text, top3_data, api_key, log_func=print):
     b_list_str = ""
     for i, item in enumerate(top3_data):
         b_list_str += f"[{i}] 名称:{item[1]}, 规格:{item[2]}, 尺寸:{item[3]}\n"
-    # Build prompt without using f-string formatting to avoid "Invalid format specifier" errors
+    # Intentionally use string concatenation (not .format/f-string templating) for this prompt:
+    # the template contains literal JSON braces, and dynamic text may also include brace characters.
+    # Concatenation keeps all braces as plain text and avoids fragile formatter parsing issues.
     prompt = ("""##角色:你是物料匹配专家
 ##任务:从"##B候选"的3条物料中找出与"##A材料"最相似的1条，并给出相似度评分
 ##A材料: """ + a_text + """
