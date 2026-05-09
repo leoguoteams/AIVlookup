@@ -1,0 +1,12 @@
+{
+  "api_key": "sk-0d754cf4929f42d58cbba991a0e77580",
+  "batch_size": 10,
+  "max_concurrency": 1,
+  "use_cache": true,
+  "llm_concurrency": 4,
+  "sim_top1_th": 0.9,
+  "diff_top12_th": 0.035,
+  "use_default_thresholds": true,
+  "llm_weight": 0.5,
+  "cosine_weight": 0.5
+}
