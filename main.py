@@ -1035,8 +1035,6 @@ class AISemanticMatchApp:
         ttk.Label(frame_step2, text="LLM请求并发：", foreground="gray").place(x=20, y=58)
         if not hasattr(self, 'llm_concurrency_cb'):
             self.llm_concurrency_cb = ttk.Combobox(frame_step2, textvariable=self.llm_concurrency, values=[2, 4, 8, 10], width=6, state="readonly")
-        if not hasattr(self, 'llm_concurrency_cb'):
-            self.llm_concurrency_cb = ttk.Combobox(frame_step2, textvariable=self.llm_concurrency, values=[2, 4, 8, 10], width=6, state="readonly")
         self.llm_concurrency_cb.place(x=150, y=56)        
 
         # 匹配按钮
