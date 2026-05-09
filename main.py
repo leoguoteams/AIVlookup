@@ -296,12 +296,9 @@ class AISemanticMatchApp:
                 self.batch_size.set(cfg.get("batch_size", 10))
                 self.max_concurrency.set(cfg.get("max_concurrency", 1))
                 self.use_cache.set(cfg.get("use_cache", True))
-                # LL.M concurrency setting (default 4)
+                # LL.M concurrency setting from config (single consolidated path)
                 if hasattr(self, 'llm_concurrency'):
                     self.llm_concurrency.set(cfg.get("llm_concurrency", self.llm_concurrency.get()))
-                # Persisted LL.M concurrency if provided
-                if 'llm_concurrency' in cfg:
-                    self.llm_concurrency.set(cfg.get("llm_concurrency", 4))
                 # Threshold gates (from config, fallback to defaults)
                 self.sim_top1_th = cfg.get("sim_top1_th", self.sim_top1_th if hasattr(self, 'sim_top1_th') else 0.90)
                 self.diff_top12_th = cfg.get("diff_top12_th", self.diff_top12_th if hasattr(self, 'diff_top12_th') else 0.035)
