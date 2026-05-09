@@ -836,8 +836,8 @@ class AISemanticMatchApp:
             top2_val = sim[top3_idx[1]] if len(top3_idx) > 1 else 0.0
             gate_pass = False
             if (len(top3_data) >= 1) and (isinstance(top1_val, float) and math.isfinite(top1_val)):
-                # 原有严格门槛：顶1分大于阈值且顶1-顶2差值大于阈值时直接命中
-                if (top1_val >= self.sim_top1_th) or (top1_val >= 0.965):
+                # 统一使用可配置门槛：仅当顶1分达到 sim_top1_th 时直接命中
+                if top1_val >= self.sim_top1_th:
                     gate_pass = True
 
             # Log gate decision details for debugging
