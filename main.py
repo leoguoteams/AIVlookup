@@ -113,7 +113,9 @@ def llm_find_best_from_top3(a_text, top3_data, api_key, log_func=print):
     b_list_str = ""
     for i, item in enumerate(top3_data):
         b_list_str += f"[{i}] 名称:{item[1]}, 规格:{item[2]}, 尺寸:{item[3]}\n"
-    # Build prompt without using f-string formatting to avoid "Invalid format specifier" errors
+    # Intentionally use string concatenation (not .format/f-string templating) for this prompt:
+    # the template contains literal JSON braces, and dynamic text may also include brace characters.
+    # Concatenation keeps all braces as plain text and avoids fragile formatter parsing issues.
     prompt = ("""##角色:你是物料匹配专家
 ##任务:从"##B候选"的3条物料中找出与"##A材料"最相似的1条，并给出相似度评分
 ##A材料: """ + a_text + """
@@ -296,12 +298,9 @@ class AISemanticMatchApp:
                 self.batch_size.set(cfg.get("batch_size", 10))
                 self.max_concurrency.set(cfg.get("max_concurrency", 1))
                 self.use_cache.set(cfg.get("use_cache", True))
-                # LL.M concurrency setting (default 4)
+                # LL.M concurrency setting from config (single consolidated path)
                 if hasattr(self, 'llm_concurrency'):
                     self.llm_concurrency.set(cfg.get("llm_concurrency", self.llm_concurrency.get()))
-                # Persisted LL.M concurrency if provided
-                if 'llm_concurrency' in cfg:
-                    self.llm_concurrency.set(cfg.get("llm_concurrency", 4))
                 # Threshold gates (from config, fallback to defaults)
                 self.sim_top1_th = cfg.get("sim_top1_th", self.sim_top1_th if hasattr(self, 'sim_top1_th') else 0.90)
                 self.diff_top12_th = cfg.get("diff_top12_th", self.diff_top12_th if hasattr(self, 'diff_top12_th') else 0.035)
@@ -836,8 +835,8 @@ class AISemanticMatchApp:
             top2_val = sim[top3_idx[1]] if len(top3_idx) > 1 else 0.0
             gate_pass = False
             if (len(top3_data) >= 1) and (isinstance(top1_val, float) and math.isfinite(top1_val)):
-                # 原有严格门槛：顶1分大于阈值且顶1-顶2差值大于阈值时直接命中
-                if (top1_val >= self.sim_top1_th) or (top1_val >= 0.965):
+                # 统一使用可配置门槛：仅当顶1分达到 sim_top1_th 时直接命中
+                if top1_val >= self.sim_top1_th:
                     gate_pass = True
 
             # Log gate decision details for debugging
@@ -856,10 +855,10 @@ class AISemanticMatchApp:
                 match_count += 1
             else:
                 log_print(self.log_box, f"→ 第{idx+1}/{total}条：向量化相似度={top1_val:.3f}，Top2={top2_val:.3f}，进入LLM并发准备...")
-            # Defer LL.M 调用，后续批量执行
-            final_results[idx] = [a_txt, "", "", "", 0, "LLM", "LLM-pending"]
-            cosine_score_for_this = int(top1_val * 100)
-            pending_llm.append((idx, a_txt, top3_data, api_key, cosine_score_for_this))
+                # Defer LL.M 调用，后续批量执行
+                final_results[idx] = [a_txt, "", "", "", 0, "LLM", "LLM-pending"]
+                cosine_score_for_this = int(top1_val * 100)
+                pending_llm.append((idx, a_txt, top3_data, api_key, cosine_score_for_this))
 
             self.match_progress["value"] = 50 + ((idx + 1) / total) * 50
 
@@ -1033,8 +1032,6 @@ class AISemanticMatchApp:
 
         #LLM并发
         ttk.Label(frame_step2, text="LLM请求并发：", foreground="gray").place(x=20, y=58)
-        if not hasattr(self, 'llm_concurrency_cb'):
-            self.llm_concurrency_cb = ttk.Combobox(frame_step2, textvariable=self.llm_concurrency, values=[2, 4, 8, 10], width=6, state="readonly")
         if not hasattr(self, 'llm_concurrency_cb'):
             self.llm_concurrency_cb = ttk.Combobox(frame_step2, textvariable=self.llm_concurrency, values=[2, 4, 8, 10], width=6, state="readonly")
         self.llm_concurrency_cb.place(x=150, y=56)        
